@@ -1,18 +1,34 @@
 '''
-Created on 21 de mai de 2019
+Univesidade Federal de Pernambuco -- UFPE (http://www.ufpe.br)
+Centro de Informatica -- CIn (http://www.cin.ufpe.br)
+Bacharelado em Sistemas de Informacao
+IF975 -- Redes de Computadores
 
-@author: danilo
+Autor:    Danilo Leite de Franca
+Email:    dlf3@cin.ufpe.br
+Data:        2019-05-19
+
+Descricao:  Classe Peer.
+
+
+Licenca: The MIT License (MIT)
+            Copyright(c) 2019 Danilo Leite de Franca
 '''
 
 import socket
 import threading
 
 class Peer(object):
-
+    '''
+    Representacao de uma conexão P2P
+    '''
     connections = []
     peers = []
 
     def __init__(self,adress,jogador,opcao,sala):
+        '''
+        Função onde ocorre a inicialização da conexão e das threads para enviar e receber mensagem
+        '''
         self.cliId = jogador.nome
         self.adress = adress
         self.criaSocket()
@@ -62,6 +78,9 @@ class Peer(object):
                     print(str(data,'utf-8'))
 
     def handler(self, c, a):
+        '''
+        Funcao da tread de recepcao de mensagens
+        '''
         while True:
             try:
                 data = c.recv(1024)
@@ -89,9 +108,15 @@ class Peer(object):
                 break
 
     def updatePeers(self, peerData):
+        '''
+        Funcao de atualizacao da lista de de peers
+        '''
         self.peers = str(peerData, 'utf-8').split(",")[:-1]
 
     def sendPeers(self):
+        '''
+        Funcao que envia a lista de peers para todos os outros conectados
+        '''
         p = ""
         for peer in self.peers:
             p = p + peer  + ","
@@ -100,17 +125,26 @@ class Peer(object):
             connection.send(b'\x11'+ bytes(p, "utf-8"))
 
     def sendMsgSys(self,msg):
+        '''
+        Funcao para envio de mensagens geral
+        '''
         dados = bytes(msg,'utf-8')
         for connection in self.connections:
             connection.send(dados)
 
     def sendMsg(self,UsrName):
+        '''
+        Funcao para envio de mensagens do servidor
+        '''
         while True:
             dados = bytes(UsrName+": "+input(""),'utf-8')
             for connection in self.connections:
                 connection.send(dados)
 
     def sendMsgCli(self,UsrName):
+        '''
+        Funcao para envio de mensagens dos clientes
+        '''
         while True:
             try:
                 msg = bytes(UsrName+": "+input(""),'utf-8')
@@ -131,9 +165,15 @@ class Peer(object):
 
 
     def connectPeer(self):
+        '''
+        Funcao para conexao com outro usuário
+        '''
         self.sock.connect((self.adress,10000))
 
 
     def criaSocket(self):
+        '''
+        Funcao de parametrizacao de um socket
+        '''
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
